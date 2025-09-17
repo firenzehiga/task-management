@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Task;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\TaskList;
@@ -13,7 +14,7 @@ class ListController extends Controller
      */
     public function index()
     {
-        $lists = TaskList::where('user_id', auth()->id())->with('tasks')->get();
+        $lists = TaskList::where('user_id', auth()->id())->get();
         return Inertia::render('Lists/Index', ['lists' => $lists, 'flash' => [
             'success' => session('success'),
             'error' => session('error')
@@ -33,7 +34,13 @@ class ListController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string|max:1000',
+        ]);
+
+        TaskList::create([...$validated, 'user_id' => auth()->id()]);
+        return redirect()->route('lists.index')->with('success', 'List created successfully.');
     }
 
     /**
@@ -55,16 +62,23 @@ class ListController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, TaskList $list)
     {
-        //
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string|max:1000',
+        ]);
+
+        $list->update($validated);
+        return redirect()->route('lists.index')->with('success', 'List updated successfully.');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(TaskList $list)
     {
-        //
+        $list->delete();
+        return redirect()->route('lists.index')->with('success', 'List deleted successfully.');
     }
 }
