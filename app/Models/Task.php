@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
 class Task extends Model
 {
     protected $fillable = [
@@ -12,6 +13,11 @@ class Task extends Model
         'is_completed',
         'due_date',
         'list_id',
+    ];
+
+    protected $casts = [
+        'is_completed' => 'boolean',
+        'due_date' => 'date',
     ];
 
     public function list(): BelongsTo

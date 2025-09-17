@@ -25,7 +25,7 @@ class ListController extends Controller
      */
     public function create()
     {
-        //
+        return Inertia::render('Lists/Create');
     }
 
     /**
@@ -33,7 +33,16 @@ class ListController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string|max:1000',
+        ]);
+
+        $list = new TaskList($request->only('title', 'description'));
+        $list->user_id = auth()->id();
+        $list->save();
+
+        return redirect()->route('lists.index')->with('success', 'List created successfully.');
     }
 
     /**
@@ -41,7 +50,8 @@ class ListController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $list = TaskList::where('user_id', auth()->id())->with('tasks')->findOrFail($id);
+        return Inertia::render('Lists/Show', ['list' => $list]);
     }
 
     /**
@@ -49,7 +59,8 @@ class ListController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $list = TaskList::where('user_id', auth()->id())->findOrFail($id);
+        return Inertia::render('Lists/Edit', ['list' => $list]);
     }
 
     /**
@@ -57,7 +68,15 @@ class ListController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string|max:1000',
+        ]);
+
+        $list = TaskList::where('user_id', auth()->id())->findOrFail($id);
+        $list->update($request->only('title', 'description'));
+
+        return redirect()->route('lists.index')->with('success', 'List updated successfully.');
     }
 
     /**
@@ -65,6 +84,9 @@ class ListController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $list = TaskList::where('user_id', auth()->id())->findOrFail($id);
+        $list->delete();
+
+        return redirect()->route('lists.index')->with('success', 'List deleted successfully.');
     }
 }
